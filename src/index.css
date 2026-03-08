@@ -1,0 +1,42 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+@import "tailwindcss";
+
+/* DaisyUI */
+@plugin "daisyui";
+
+/* Enabled Themes Only */
+@plugin "daisyui/theme" {
+  name: "corporate";
+  default: true;
+}
+
+@plugin "daisyui/theme" { name: "emerald"; }
+@plugin "daisyui/theme" { name: "dark"; }
+@plugin "daisyui/theme" { name: "winter"; }
+@plugin "daisyui/theme" { name: "coffee"; }
+@plugin "daisyui/theme" { name: "night"; }
+
+/* Custom global styles */
+@layer base {
+  body {
+    font-family: "Inter", sans-serif;
+  }
+
+  code, pre, kbd {
+    font-family: "JetBrains Mono", monospace;
+  }
+}
+
+/* Custom Theme */
+@plugin "daisyui/theme" {
+  name: "employee-system-2";
+
+  --color-primary: #45CB85;
+  --color-secondary: #10b981;
+  --color-base-100: #f1f5f9;
+  --color-base-content: #0f172a;
+
+  --font-family-sans: "Inter", sans-serif;
+  --font-family-mono: "JetBrains Mono", monospace;
+}

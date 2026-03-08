@@ -2,15 +2,20 @@
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { getEmployeeById, updateEmployee } from "../../service/EmployeeService";
-import { FaUser, FaPhone, FaCalendarAlt, FaVenusMars } from "react-icons/fa";
+import { FaUser, FaPhone, FaCalendarAlt, FaVenusMars, FaDollarSign, FaBuilding, FaEnvelope } from "react-icons/fa";
 
 const EmployeeUpdateProfileModal = ({ employeeId, onClose, onSuccess }) => {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
+    email: "",
     phoneNumber: "",
     gender: "",
     dateOfBirth: "",
+    joiningDate: "",
+    salary: "",
+    designation: "",
+    departmentId: "",
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -23,9 +28,14 @@ const EmployeeUpdateProfileModal = ({ employeeId, onClose, onSuccess }) => {
         setFormData({
           firstName: emp.firstName || "",
           lastName: emp.lastName || "",
+          email: emp.email || "",
           phoneNumber: emp.phoneNumber || "",
           gender: emp.gender || "",
           dateOfBirth: emp.dateOfBirth || "",
+          joiningDate: emp.joiningDate || "",
+          salary: emp.salary || "",
+          designation: emp.designation || "",
+          departmentId: emp.departmentId || "",
         });
       } catch {
         toast.error("Failed to load profile");
@@ -44,7 +54,17 @@ const EmployeeUpdateProfileModal = ({ employeeId, onClose, onSuccess }) => {
     e.preventDefault();
     try {
       setSaving(true);
-      await updateEmployee(employeeId, formData);
+
+      // Send only editable fields to backend
+      const updateData = {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        phoneNumber: formData.phoneNumber,
+        gender: formData.gender,
+        dateOfBirth: formData.dateOfBirth,
+      };
+
+      await updateEmployee(employeeId, updateData);
       toast.success("Profile updated successfully 🎉");
       onSuccess();
       setTimeout(onClose, 800);
@@ -63,9 +83,7 @@ const EmployeeUpdateProfileModal = ({ employeeId, onClose, onSuccess }) => {
           <h3 className="text-2xl md:text-3xl font-bold text-base-content">
             Update Profile
           </h3>
-          <button onClick={onClose} className="btn btn-sm btn-circle btn-ghost">
-            ✕
-          </button>
+          <button onClick={onClose} className="btn btn-sm btn-circle btn-ghost">✕</button>
         </div>
 
         {loading ? (
@@ -74,62 +92,26 @@ const EmployeeUpdateProfileModal = ({ employeeId, onClose, onSuccess }) => {
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Grid Inputs */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <InputField
-                icon={<FaUser />}
-                label="First Name"
-                value={formData.firstName}
-                onChange={(v) => handleChange("firstName", v)}
-              />
-              <InputField
-                icon={<FaUser />}
-                label="Last Name"
-                value={formData.lastName}
-                onChange={(v) => handleChange("lastName", v)}
-              />
-              <InputField
-                icon={<FaPhone />}
-                label="Phone Number"
-                value={formData.phoneNumber}
-                onChange={(v) => handleChange("phoneNumber", v)}
-              />
-              <SelectField
-                icon={<FaVenusMars />}
-                label="Gender"
-                value={formData.gender}
-                onChange={(v) => handleChange("gender", v)}
-                options={["MALE", "FEMALE", "OTHER"]}
-              />
-              <InputField
-                icon={<FaCalendarAlt />}
-                label="Date of Birth"
-                type="date"
-                value={formData.dateOfBirth}
-                onChange={(v) => handleChange("dateOfBirth", v)}
-                className="md:col-span-2"
-              />
+              {/* Editable Fields */}
+              <InputField icon={<FaUser />} label="First Name" value={formData.firstName} onChange={(v) => handleChange("firstName", v)} disabled={false} />
+              <InputField icon={<FaUser />} label="Last Name" value={formData.lastName} onChange={(v) => handleChange("lastName", v)} disabled={false} />
+              <InputField icon={<FaPhone />} label="Phone Number" value={formData.phoneNumber} onChange={(v) => handleChange("phoneNumber", v)} disabled={false} />
+              <SelectField icon={<FaVenusMars />} label="Gender" value={formData.gender} onChange={(v) => handleChange("gender", v)} options={["MALE", "FEMALE", "OTHER"]} disabled={false} />
+              <InputField icon={<FaCalendarAlt />} label="Date of Birth" type="date" value={formData.dateOfBirth} onChange={(v) => handleChange("dateOfBirth", v)} className="md:col-span-2" disabled={false} />
+
+              {/* Read-only Fields */}
+              <InputField icon={<FaEnvelope />} label="Email" value={formData.email} disabled={true} />
+              <InputField icon={<FaCalendarAlt />} label="Joining Date" type="date" value={formData.joiningDate} disabled={true} />
+              <InputField icon={<FaDollarSign />} label="Salary" value={formData.salary} disabled={true} />
+              <InputField icon={<FaUser />} label="Designation" value={formData.designation} disabled={true} />
+              <InputField icon={<FaBuilding />} label="Department" value={formData.departmentId} disabled={true} />
             </div>
 
-            {/* Buttons */}
             <div className="flex flex-col md:flex-row justify-end gap-3 pt-4 border-t border-base-300">
-              <button
-                type="button"
-                onClick={onClose}
-                className="btn btn-outline w-full md:w-auto"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="btn btn-primary w-full md:w-auto px-6"
-                disabled={saving}
-              >
-                {saving ? (
-                  <span className="loading loading-spinner loading-sm"></span>
-                ) : (
-                  "Save Changes"
-                )}
+              <button type="button" onClick={onClose} className="btn btn-outline w-full md:w-auto">Cancel</button>
+              <button type="submit" className="btn btn-primary w-full md:w-auto px-6" disabled={saving}>
+                {saving ? <span className="loading loading-spinner loading-sm"></span> : "Save Changes"}
               </button>
             </div>
           </form>
@@ -140,14 +122,7 @@ const EmployeeUpdateProfileModal = ({ employeeId, onClose, onSuccess }) => {
 };
 
 // ===== Input Field Component =====
-const InputField = ({
-  icon,
-  label,
-  value,
-  onChange,
-  type = "text",
-  className = "",
-}) => (
+const InputField = ({ icon, label, value, onChange, type = "text", className = "", disabled = false }) => (
   <div className={`form-control w-full ${className}`}>
     <label className="label font-semibold text-base-content/70">{label}</label>
     <div className="relative">
@@ -156,14 +131,15 @@ const InputField = ({
         type={type}
         className="input input-bordered w-full pl-10 focus:ring-2 focus:ring-primary"
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) => onChange && onChange(e.target.value)}
+        disabled={disabled}
       />
     </div>
   </div>
 );
 
 // ===== Select Field Component =====
-const SelectField = ({ icon, label, value, onChange, options }) => (
+const SelectField = ({ icon, label, value, onChange, options, disabled = false }) => (
   <div className="form-control w-full">
     <label className="label font-semibold text-base-content/70">{label}</label>
     <div className="relative">
@@ -171,13 +147,12 @@ const SelectField = ({ icon, label, value, onChange, options }) => (
       <select
         className="select select-bordered w-full pl-10 focus:ring-2 focus:ring-primary"
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) => onChange && onChange(e.target.value)}
+        disabled={disabled}
       >
         <option value="">Select {label}</option>
         {options.map((opt) => (
-          <option key={opt} value={opt}>
-            {opt}
-          </option>
+          <option key={opt} value={opt}>{opt}</option>
         ))}
       </select>
     </div>

@@ -41,7 +41,7 @@ const LoginForm = () => {
           error.response?.data?.message ||
             "Something went wrong. Please try again.",
         );
-         navigate("/employee-management-system/login");
+         navigate("/kartikade27.github.io/login");
       } finally {
         setLoading(false);
       }

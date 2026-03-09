@@ -44,7 +44,7 @@ const Employees = () => {
   }, []);
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
+    <div className="space-y-6">
       {/* Header */}
       <div className="card bg-base-100 shadow border border-base-200">
         <div className="card-body flex flex-col md:flex-row md:items-center md:justify-between gap-4">

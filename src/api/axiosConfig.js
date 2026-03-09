@@ -48,7 +48,7 @@ axiosInstance.interceptors.response.use(
         return axiosInstance(originalRequest);
       } catch (err) {
         clearAuthData();
-        window.location.href = "kartikade27.github.io/employee-management-frontend/"; // Redirect to login page
+        window.location.href = "https://kartikade27.github.io/employee-management-frontend/"; // Redirect to login page
       }
     }
 

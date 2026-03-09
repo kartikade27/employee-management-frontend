@@ -48,7 +48,7 @@ axiosInstance.interceptors.response.use(
         return axiosInstance(originalRequest);
       } catch (err) {
         clearAuthData();
-        window.location.href = "/"; // Redirect to login page
+        window.location.href = "/employee-management-system/"; // Redirect to login page
       }
     }
 

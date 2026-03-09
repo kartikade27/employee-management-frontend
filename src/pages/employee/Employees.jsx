@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { getAllEmployees } from "../../service/EmployeeService";
 import EmployeeList from "./EmployeeList";
 import CreateEmployeeModal from "./CreateEmployeeModal";
@@ -9,11 +9,14 @@ import SearchEmployee from "./SearchEmployee";
 
 import toast from "react-hot-toast";
 import { Users, Plus } from "lucide-react";
+import { AuthContext } from "../../context/AuthContext";
 
 const Employees = () => {
   const [employees, setEmployees] = useState([]);
   const [filteredEmployees, setFilteredEmployees] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  const { user } = useContext(AuthContext);
 
   const [openCreate, setOpenCreate] = useState(false);
   const [viewId, setViewId] = useState(null);
@@ -24,8 +27,11 @@ const Employees = () => {
     try {
       setLoading(true);
       const res = await getAllEmployees();
-      setEmployees(res.data || []);
-      setFilteredEmployees(res.data || []);
+
+      const data = res.data || [];
+
+      setEmployees(data);
+      setFilteredEmployees(data);
     } catch {
       toast.error("Failed to fetch employees");
     } finally {
@@ -38,14 +44,15 @@ const Employees = () => {
   }, []);
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-7xl mx-auto space-y-6">
       {/* Header */}
-      <div className="card bg-base-100 shadow-sm border border-base-200 rounded-xl">
-        <div className="card-body flex flex-col md:flex-row md:justify-between gap-4 items-center">
+      <div className="card bg-base-100 shadow border border-base-200">
+        <div className="card-body flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex items-center gap-4">
             <div className="p-3 rounded-xl bg-primary/10 text-primary">
               <Users size={24} />
             </div>
+
             <div>
               <h2 className="text-xl font-semibold">Employees Management</h2>
               <p className="text-sm opacity-70">Manage all employees</p>
@@ -56,33 +63,35 @@ const Employees = () => {
             className="btn btn-primary gap-2 w-full sm:w-auto"
             onClick={() => setOpenCreate(true)}
           >
-            <Plus size={16} />
+            <Plus size={18} />
             Add Employee
           </button>
         </div>
       </div>
 
-      {/* Employee Table */}
-
-      {/* Search */}
-
-      <div className="card-body p-4">
-        <SearchEmployee
-          fullEmployees={employees}
-          onSearchResults={setFilteredEmployees}
-        />
-        {loading ? (
-          <div className="flex justify-center py-10">
-            <span className="loading loading-spinner loading-lg"></span>
-          </div>
-        ) : (
-          <EmployeeList
-            employees={filteredEmployees}
-            onView={(id) => setViewId(id)}
-            onEdit={(id) => setEditId(id)}
-            onDelete={(emp) => setDeleteData(emp)}
+      {/* Employees Section */}
+      <div className="card bg-base-100 shadow border border-base-200">
+        <div className="card-body space-y-4">
+          {/* Search */}
+          <SearchEmployee
+            fullEmployees={employees}
+            onSearchResults={setFilteredEmployees}
           />
-        )}
+
+          {/* Loading */}
+          {loading ? (
+            <div className="flex justify-center py-12">
+              <span className="loading loading-spinner loading-lg text-primary"></span>
+            </div>
+          ) : (
+            <EmployeeList
+              employees={filteredEmployees}
+              onView={(id) => setViewId(id)}
+              onEdit={(id) => setEditId(id)}
+              onDelete={(emp) => setDeleteData(emp)}
+            />
+          )}
+        </div>
       </div>
 
       {/* Create Employee Modal */}
@@ -92,7 +101,7 @@ const Employees = () => {
         onCreated={fetchEmployees}
       />
 
-      {/* View Employee Modal */}
+      {/* View Employee */}
       {viewId && (
         <ViewEmployeeDetails
           employeeId={viewId}
@@ -100,16 +109,17 @@ const Employees = () => {
         />
       )}
 
-      {/* Update Employee Modal */}
+      {/* Update Employee */}
       {editId && (
         <UpdateEmployeeModal
           employeeId={editId}
           onClose={() => setEditId(null)}
           onSuccess={fetchEmployees}
+          userRole={user.role}
         />
       )}
 
-      {/* Delete Employee Modal */}
+      {/* Delete Employee */}
       {deleteData && (
         <DeleteEmployeeModal
           open={true}

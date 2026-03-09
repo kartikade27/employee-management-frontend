@@ -12,7 +12,7 @@ import {
   Users,
 } from "lucide-react";
 
-const UpdateEmployeeModal = ({ employeeId, onClose, onSuccess }) => {
+const UpdateEmployeeModal = ({ employeeId, onClose, onSuccess, userRole }) => {
   const [departments, setDepartments] = useState([]);
   const [formData, setFormData] = useState({});
   const [errors, setErrors] = useState({});
@@ -38,58 +38,58 @@ const UpdateEmployeeModal = ({ employeeId, onClose, onSuccess }) => {
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-
-    setErrors((prev) => ({
-      ...prev,
-      [field]: "",
-    }));
+    setErrors((prev) => ({ ...prev, [field]: "" }));
   };
 
-  // 🔹 Validation Function
+  // Role-based edit control
+  const canEdit = (field) => {
+    const HR_FIELDS = ["designation", "departmentId"];
+
+    if (userRole === "ADMIN") return true;
+
+    if (userRole === "HR") {
+      return HR_FIELDS.includes(field);
+    }
+
+    return false;
+  };
+
+  // Validation
   const validate = () => {
     const newErrors = {};
 
-    if (!formData.firstName?.trim()) {
-      newErrors.firstName = "First name is required";
-    }
+    if (canEdit("firstName") && !formData.firstName?.trim())
+      newErrors.firstName = "First name required";
 
-    if (!formData.lastName?.trim()) {
-      newErrors.lastName = "Last name is required";
-    }
+    if (canEdit("lastName") && !formData.lastName?.trim())
+      newErrors.lastName = "Last name required";
 
-    if (!formData.email?.trim()) {
-      newErrors.email = "Email is required";
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Invalid email";
-    }
-
-    if (!formData.phoneNumber) {
-      newErrors.phoneNumber = "Phone number required";
-    } else if (!/^[0-9]{10}$/.test(formData.phoneNumber)) {
+    if (canEdit("phoneNumber") && !/^[0-9]{10}$/.test(formData.phoneNumber))
       newErrors.phoneNumber = "Phone must be 10 digits";
-    }
 
-    if (!formData.dateOfBirth) {
+    if (canEdit("gender") && !formData.gender)
+      newErrors.gender = "Gender required";
+
+    if (canEdit("dateOfBirth") && !formData.dateOfBirth)
       newErrors.dateOfBirth = "Date of birth required";
-    }
 
-    if (!formData.designation?.trim()) {
+    if (canEdit("joiningDate") && !formData.joiningDate)
+      newErrors.joiningDate = "Joining date required";
+
+    if (canEdit("designation") && !formData.designation?.trim())
       newErrors.designation = "Designation required";
-    }
 
-    if (!formData.departmentId) {
+    if (canEdit("departmentId") && !formData.departmentId)
       newErrors.departmentId = "Department required";
-    }
 
-    if (!formData.salary || formData.salary <= 0) {
+    if (canEdit("salary") && (!formData.salary || formData.salary <= 0))
       newErrors.salary = "Salary must be positive";
-    }
 
     setErrors(newErrors);
-
     return Object.keys(newErrors).length === 0;
   };
 
+  // Submit handler
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -99,11 +99,40 @@ const UpdateEmployeeModal = ({ employeeId, onClose, onSuccess }) => {
     }
 
     try {
-      await updateEmployee(employeeId, formData);
-      toast.success("Employee updated");
+      let updateData = {};
+
+      if (userRole === "HR") {
+        updateData = {
+          designation: formData.designation,
+          departmentId: formData.departmentId,
+        };
+      }
+
+      if (userRole === "ADMIN") {
+        updateData = {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          phoneNumber: formData.phoneNumber,
+          gender: formData.gender,
+          dateOfBirth: formData.dateOfBirth,
+          joiningDate: formData.joiningDate,
+          designation: formData.designation,
+          salary: formData.salary,
+          status: formData.status,
+          departmentId: formData.departmentId,
+          userId: formData.userId,
+        };
+      }
+
+      await updateEmployee(employeeId, updateData);
+
+      toast.success("Employee updated successfully");
+
       onSuccess?.();
       onClose();
-    } catch {
+    } catch (err) {
+      console.error(err);
       toast.error("Update failed");
     }
   };
@@ -120,32 +149,47 @@ const UpdateEmployeeModal = ({ employeeId, onClose, onSuccess }) => {
             icon={<User />}
             placeholder="First Name"
             value={formData.firstName || ""}
-            error={errors.firstName}
             onChange={(val) => handleChange("firstName", val)}
+            disabled={!canEdit("firstName")}
+            error={errors.firstName}
           />
 
           <InputField
             icon={<User />}
             placeholder="Last Name"
             value={formData.lastName || ""}
-            error={errors.lastName}
             onChange={(val) => handleChange("lastName", val)}
+            disabled={!canEdit("lastName")}
+            error={errors.lastName}
           />
 
           <InputField
             icon={<Mail />}
             placeholder="Email"
             value={formData.email || ""}
-            error={errors.email}
-            onChange={(val) => handleChange("email", val)}
+            disabled
           />
 
           <InputField
             icon={<Phone />}
             placeholder="Phone"
             value={formData.phoneNumber || ""}
-            error={errors.phoneNumber}
             onChange={(val) => handleChange("phoneNumber", val)}
+            disabled={!canEdit("phoneNumber")}
+            error={errors.phoneNumber}
+          />
+
+          <SelectField
+            icon={<User />}
+            options={[
+              { label: "MALE", value: "MALE" },
+              { label: "FEMALE", value: "FEMALE" },
+            ]}
+            placeholder="Gender"
+            value={formData.gender || ""}
+            onChange={(val) => handleChange("gender", val)}
+            disabled={!canEdit("gender")}
+            error={errors.gender}
           />
 
           <InputField
@@ -153,16 +197,28 @@ const UpdateEmployeeModal = ({ employeeId, onClose, onSuccess }) => {
             placeholder="Date of Birth"
             type="date"
             value={formData.dateOfBirth || ""}
-            error={errors.dateOfBirth}
             onChange={(val) => handleChange("dateOfBirth", val)}
+            disabled={!canEdit("dateOfBirth")}
+            error={errors.dateOfBirth}
+          />
+
+          <InputField
+            icon={<Calendar />}
+            placeholder="Joining Date"
+            type="date"
+            value={formData.joiningDate || ""}
+            onChange={(val) => handleChange("joiningDate", val)}
+            disabled={!canEdit("joiningDate")}
+            error={errors.joiningDate}
           />
 
           <InputField
             icon={<Briefcase />}
             placeholder="Designation"
             value={formData.designation || ""}
-            error={errors.designation}
             onChange={(val) => handleChange("designation", val)}
+            disabled={!canEdit("designation")}
+            error={errors.designation}
           />
 
           <SelectField
@@ -173,8 +229,9 @@ const UpdateEmployeeModal = ({ employeeId, onClose, onSuccess }) => {
             }))}
             placeholder="Select Department"
             value={formData.departmentId || ""}
-            error={errors.departmentId}
             onChange={(val) => handleChange("departmentId", val)}
+            disabled={!canEdit("departmentId")}
+            error={errors.departmentId}
           />
 
           <InputField
@@ -182,8 +239,9 @@ const UpdateEmployeeModal = ({ employeeId, onClose, onSuccess }) => {
             placeholder="Salary"
             type="number"
             value={formData.salary || ""}
-            error={errors.salary}
             onChange={(val) => handleChange("salary", val)}
+            disabled={!canEdit("salary")}
+            error={errors.salary}
           />
 
           <SelectField
@@ -195,12 +253,14 @@ const UpdateEmployeeModal = ({ employeeId, onClose, onSuccess }) => {
             placeholder="Status"
             value={formData.status || ""}
             onChange={(val) => handleChange("status", val)}
+            disabled={!canEdit("status")}
           />
 
           <div className="col-span-2 flex justify-end gap-3 mt-4">
             <button type="button" className="btn btn-outline" onClick={onClose}>
               Cancel
             </button>
+
             <button className="btn btn-primary">Update</button>
           </div>
         </form>
@@ -218,6 +278,7 @@ const InputField = ({
   placeholder,
   type = "text",
   error,
+  disabled = false,
 }) => (
   <div>
     <div className="relative">
@@ -226,13 +287,11 @@ const InputField = ({
         type={type}
         placeholder={placeholder}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className={`input input-bordered w-full pl-10 ${
-          error ? "input-error" : ""
-        }`}
+        onChange={(e) => onChange && onChange(e.target.value)}
+        className={`input input-bordered w-full pl-10 ${error ? "input-error" : ""}`}
+        disabled={disabled}
       />
     </div>
-
     {error && <p className="text-error text-sm mt-1">{error}</p>}
   </div>
 );
@@ -244,16 +303,16 @@ const SelectField = ({
   value,
   onChange,
   error,
+  disabled = false,
 }) => (
   <div>
     <div className="relative">
       <div className="absolute left-3 top-3 text-primary/70">{icon}</div>
       <select
-        className={`select select-bordered w-full pl-10 ${
-          error ? "select-error" : ""
-        }`}
+        className={`select select-bordered w-full pl-10 ${error ? "select-error" : ""}`}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) => onChange && onChange(e.target.value)}
+        disabled={disabled}
       >
         <option value="">{placeholder}</option>
         {options.map((opt) => (

@@ -6,7 +6,8 @@ import {
   saveAuthData,
 } from "../utils/tokenService";
 
-const BASE_URL = "https://employee-management-system-k5eb.onrender.com/api";
+// const BASE_URL = "https://employee-management-system-k5eb.onrender.com/api";
+const BASE_URL = "http://localhost:8080/api";
 
 const axiosInstance = axios.create({
   baseURL: BASE_URL,

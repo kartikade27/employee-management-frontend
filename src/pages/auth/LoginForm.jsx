@@ -41,6 +41,7 @@ const LoginForm = () => {
           error.response?.data?.message ||
             "Something went wrong. Please try again.",
         );
+        navigate("/login");
       } finally {
         setLoading(false);
       }
@@ -127,8 +128,6 @@ const LoginForm = () => {
           >
             {loading ? "Logging in..." : "Login"}
           </button>
-
-          
         </form>
       </div>
     </div>

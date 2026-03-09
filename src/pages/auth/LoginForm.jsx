@@ -41,7 +41,7 @@ const LoginForm = () => {
           error.response?.data?.message ||
             "Something went wrong. Please try again.",
         );
-         navigate("/kartikade27.github.io/login");
+         navigate("https://kartikade27.github.io/employee-management-frontend/");
       } finally {
         setLoading(false);
       }

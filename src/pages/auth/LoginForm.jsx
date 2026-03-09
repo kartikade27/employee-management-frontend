@@ -25,23 +25,27 @@ const LoginForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setApiError("");
+
     const validationErrors = validate();
     setErrors(validationErrors);
 
     if (Object.keys(validationErrors).length === 0) {
       try {
         setLoading(true);
+
         const response = await login({ email, password });
+
+        toast.success("Login successful");
 
         if (response.role === "ADMIN") navigate("/admin");
         else if (response.role === "HR") navigate("/hr");
         else if (response.role === "EMPLOYEE") navigate("/employee");
       } catch (error) {
-        setApiError(
-          error.response?.data?.message ||
-            "Something went wrong. Please try again.",
-        );
-         navigate("https://kartikade27.github.io/employee-management-frontend/");
+        const message =
+          error.response?.data?.message || "Invalid username or password";
+
+        setApiError(message);
+        toast.error(message);
       } finally {
         setLoading(false);
       }

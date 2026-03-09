@@ -41,7 +41,7 @@ const LoginForm = () => {
           error.response?.data?.message ||
             "Something went wrong. Please try again.",
         );
-        navigate("/login");
+         navigate("/employee-management-system/login");
       } finally {
         setLoading(false);
       }
